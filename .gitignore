@@ -1,0 +1,10 @@
+.env
+letsencrypt/acme.json
+#
+content/plugins/akismet
+content/plugins/hello.php
+content/plugins/index.php
+content/themes/twentynineteen
+content/themes/twentyseventeen
+content/themes/twentytwenty
+content/themes/index.php

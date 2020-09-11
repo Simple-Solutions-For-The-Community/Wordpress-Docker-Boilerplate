@@ -1,0 +1,46 @@
+version: '3.7'
+services:
+    wordpress:
+        image: wordpress:latest
+        restart: always
+        networks:
+            - wp_bl_default
+        volumes: 
+            - /var/www/html
+            - ./content/themes:/var/www/html/wp-content/themes/
+            - ./content/plugins:/var/www/html/wp-content/plugins/
+            - ./wp_php_conf/php.ini:/usr/local/etc/php/conf.d/php.ini
+        expose: 
+            - '80'
+        ports:
+            - "80"
+        environment: 
+            - WORDPRESS_DB_NAME=${DB_NAME:-wordpress}
+            - WORDPRESS_DB_USER=${DB_USER_NAME:-wordpress}
+            - WORDPRESS_DB_PASSWORD=${DB_USER_PASS:-wordpress}
+            - WORDPRESS_DB_HOST=db:3306
+            - PHP_VERSION=7.4.9
+    mysql_db:
+        image: mysql:5.7
+        restart: always
+        expose: 
+            - '3306'
+        
+        environment: 
+            - MYSQL_DATABASE=${DB_NAME:-wordpress}
+            - MYSQL_USER=${DB_USER_NAME:-wordpress}
+            - MYSQL_PASSWORD=${DB_USER_PASS:-wordpress}
+            - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASS:-root}
+        networks:
+            wp_bl_default:
+                aliases:
+                    - db
+        volumes: 
+            - db_data:/var/lib/mysql
+
+networks:
+    wp_bl_default:
+        name: wp_bl_default
+        driver: bridge
+volumes:
+    db_data:
