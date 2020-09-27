@@ -10,6 +10,11 @@ services:
             - ./content/themes:/var/www/html/wp-content/themes/
             - ./content/plugins:/var/www/html/wp-content/plugins/
             - ./wp_php_conf/php.ini:/usr/local/etc/php/conf.d/php.ini
+        labels: 
+            - "traefik.enable=true"
+            - "traefik.http.routers.wpBPsite.rule=Host(`${SITEURL:?err}`, `www.${SITEURL:?err}`)"
+            - "traefik.http.routers.wpBPsite.entrypoints=web"
+            - "traefik.docker.network=wp_bl_default"
         expose: 
             - '80'
         ports:
@@ -37,6 +42,25 @@ services:
                     - db
         volumes: 
             - db_data:/var/lib/mysql
+    traefik:
+        image: "traefik:v2.2"
+        restart: always
+        command:
+            #- "--log.level=DEBUG"
+            - "--api.insecure=true"
+            - "--providers.docker=true"
+            - "--providers.docker.exposedbydefault=false"
+            - "--entrypoints.web.address=:80"
+            #- "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+            - --entrypoints.web.address=:80
+        ports:
+            - "80:80"
+            - "8080:8080"
+        volumes:
+            - "./letsencrypt:/letsencrypt"
+            - "/var/run/docker.sock:/var/run/docker.sock:ro"
+        networks:
+            wp_bl_default:
 
 networks:
     wp_bl_default:
