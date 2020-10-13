@@ -2,43 +2,37 @@ version: '3.7'
 services:
     wordpress:
         labels: 
-            - "traefik.enable=true"
-            - "traefik.http.routers.wpBPsite.rule=Host(`${SITEURL:?err}`, `www.${SITEURL:?err}`)"
             - "traefik.http.routers.wpBPsite.entrypoints=websecure"
             - "traefik.http.routers.wpBPsite.tls.certresolver=myresolver"
-            - "traefik.docker.network=wp_bl_default"
         environment: 
             - WORDPRESS_DB_NAME=${DB_NAME:?err}
             - WORDPRESS_DB_USER=${DB_USER_NAME:?err}
             - WORDPRESS_DB_PASSWORD=${DB_USER_PASS:?err}
             - WORDPRESS_DB_HOST=db:3306
             - PHP_VERSION=7.4.9
+        restart: always
     mysql_db:
         environment: 
             - MYSQL_DATABASE=${DB_NAME:?err}
             - MYSQL_USER=${DB_USER_NAME:?err}
             - MYSQL_PASSWORD=${DB_USER_PASS:?err}
             - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASS:?err}
+        restart: always
     traefik:
         image: "traefik:v2.2"
         restart: always
         command:
             #- "--log.level=DEBUG"
-            - "--api.insecure=true"
-            - "--providers.docker=true"
-            - "--providers.docker.exposedbydefault=false"
-            - "--entrypoints.web.address=:80"
+            - "--api.insecure=false"
             - "--entrypoints.websecure.address=:443"
             - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
             - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
             #- "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
             - "--certificatesresolvers.myresolver.acme.email=${AMCE_EMAIL:?err}"
             - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
-            - --entrypoints.web.address=:80
             - --entrypoints.web.http.redirections.entryPoint.to=websecure
             - --entrypoints.web.http.redirections.entryPoint.scheme=https
             - --entrypoints.web.http.redirections.entrypoint.permanent=true
-            - --entrypoints.websecure.address=:443
         ports:
             - "80:80"
             - "443:443"

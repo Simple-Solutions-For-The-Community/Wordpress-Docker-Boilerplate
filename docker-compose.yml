@@ -2,7 +2,7 @@ version: '3.7'
 services:
     wordpress:
         image: wordpress:latest
-        restart: always
+        restart: "on-failure"
         networks:
             - wp_bl_default
         volumes: 
@@ -27,7 +27,7 @@ services:
             - PHP_VERSION=7.4.9
     mysql_db:
         image: mysql:5.7
-        restart: always
+        restart: "on-failure"
         expose: 
             - '3306'
         
@@ -44,15 +44,13 @@ services:
             - db_data:/var/lib/mysql
     traefik:
         image: "traefik:v2.2"
-        restart: always
+        restart: "on-failure"
         command:
             #- "--log.level=DEBUG"
             - "--api.insecure=true"
             - "--providers.docker=true"
             - "--providers.docker.exposedbydefault=false"
             - "--entrypoints.web.address=:80"
-            #- "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
-            - --entrypoints.web.address=:80
         ports:
             - "80:80"
             - "8080:8080"
@@ -64,7 +62,6 @@ services:
 
 networks:
     wp_bl_default:
-        name: wp_bl_default
         driver: bridge
 volumes:
     db_data:
